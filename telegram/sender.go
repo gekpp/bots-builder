@@ -2,7 +2,7 @@ package telegram
 
 import (
 	"gopkg.in/telegram-bot-api.v4"
-	"github.com/pkg/errors"
+	"fmt"
 )
 
 type Sender struct {
@@ -83,5 +83,21 @@ func (s *Sender) SendMenuItemReply(item MenuItem, chatId int64) error {
 		Text: item.ReplyText,
 	}
 	_, err := s.bot.Send(&reply)
-	return errors.Wrap(err, "Send menu item")
+	return fmt.Errorf("unable to send menu item: %v", err)
+}
+
+func (s *Sender) SendMenu(m Menu, chatId int64) error {
+	keyboard := MenuToKeyboard(m...)
+
+	reply := tgbotapi.MessageConfig{
+		BaseChat: tgbotapi.BaseChat{
+			ChatID:      chatId,
+			ReplyMarkup: keyboard,
+		},
+		Text: `Чем я могу Вам помочь?
+Для перехода в главное меню, нужно нажать кнопку "Меню" внизу экрана`,
+	}
+
+	_, err := s.bot.Send(&reply)
+	return fmt.Errorf("unable to send menu: %v", err)
 }
