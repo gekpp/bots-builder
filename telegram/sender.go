@@ -16,7 +16,7 @@ func NewSender(bot *tgbotapi.BotAPI) *Sender {
 	return &s
 }
 
-type messageOption func(m *tgbotapi.BaseChat)
+type messageOption func(m *tgbotapi.MessageConfig)
 
 func removeKeyboard(m *tgbotapi.BaseChat) {
 	m.ReplyMarkup = tgbotapi.NewRemoveKeyboard(false)
@@ -31,7 +31,7 @@ func forceReply(m *tgbotapi.BaseChat) {
 }
 
 func InlineKeyboard(k tgbotapi.InlineKeyboardMarkup) messageOption {
-	return func(m *tgbotapi.BaseChat) {
+	return func(m *tgbotapi.MessageConfig) {
 		m.ReplyMarkup = k
 	}
 }
@@ -66,16 +66,7 @@ func text(update tgbotapi.Update) string {
 func (s *Sender) SendTextMessage(chatId int64, msg string, options ... messageOption) error {
 	message := tgbotapi.NewMessage(chatId, msg)
 	for _, opt := range options {
-		opt(&message.BaseChat)
-	}
-	_, err := s.bot.Send(message)
-	return err
-}
-
-func (s *Sender) SendPhoto(chatId int64, photoUrl string, options ...messageOption) error {
-	message := tgbotapi.NewPhotoUpload(chatId, photoUrl)
-	for _, opt := range options {
-		opt(&message.BaseChat)
+		opt(&message)
 	}
 	_, err := s.bot.Send(message)
 	return err
