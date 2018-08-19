@@ -30,7 +30,7 @@ func forceReply(m *tgbotapi.BaseChat) {
 	m.ReplyMarkup = tgbotapi.ForceReply{}
 }
 
-func InlineKeyboard(k tgbotapi.BaseChat) messageOption {
+func InlineKeyboard(k tgbotapi.InlineKeyboardMarkup) messageOption {
 	return func(m *tgbotapi.BaseChat) {
 		m.ReplyMarkup = k
 	}
