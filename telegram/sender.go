@@ -1,8 +1,8 @@
 package telegram
 
 import (
-	"gopkg.in/telegram-bot-api.v4"
 	"fmt"
+	"github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 type Sender struct {
@@ -63,7 +63,7 @@ func text(update tgbotapi.Update) string {
 	return ""
 }
 
-func (s *Sender) SendTextMessage(chatId int64, msg string, options ... messageOption) error {
+func (s *Sender) SendTextMessage(chatId int64, msg string, options ...messageOption) error {
 	message := tgbotapi.NewMessage(chatId, msg)
 	for _, opt := range options {
 		opt(&message)
