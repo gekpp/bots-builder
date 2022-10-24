@@ -2,7 +2,8 @@ package telegram
 
 import (
 	"fmt"
-	"github.com/go-telegram-bot-api/telegram-bot-api/v5"
+
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 type Sender struct {
@@ -22,7 +23,7 @@ func removeKeyboard(m *tgbotapi.BaseChat) {
 	m.ReplyMarkup = tgbotapi.NewRemoveKeyboard(false)
 }
 
-func MarkDown(m *tgbotapi.MessageConfig) {
+func Markdown(m *tgbotapi.MessageConfig) {
 	m.ParseMode = "Markdown"
 }
 
