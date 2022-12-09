@@ -7,3 +7,5 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/jmoiron/sqlx v1.3.5
 )
+
+require github.com/gekpp/env v0.0.1

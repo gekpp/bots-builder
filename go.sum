@@ -1,3 +1,5 @@
+github.com/gekpp/env v0.0.1 h1:c/PbDSokD/nu7RBHZ6eo/WUp8JYGs1nix9LWG0I6Kfo=
+github.com/gekpp/env v0.0.1/go.mod h1:k6UUWpFvi6nf8felcVgrWZldBWx7S63v9jxx1kViTlo=
 github.com/go-sql-driver/mysql v1.6.0 h1:BCTh4TKNUYmOmMUcQ3IipzF5prigylS7XXjEkfCHuOE=
 github.com/go-sql-driver/mysql v1.6.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LBy8hT2VhHyBg=
 github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1 h1:wG8n/XJQ07TmjbITcGiUaOtXxdrINDz1b0J1w0SzqDc=

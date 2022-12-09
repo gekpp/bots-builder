@@ -12,7 +12,7 @@ type service struct {
 }
 
 // New creates and returns new service instance
-func New(db *sqlx.DB) *service {
+func New(db *sqlx.DB, qnrID uuid.UUID) *service {
 	s := service{}
 	return &s
 }
@@ -20,7 +20,6 @@ func New(db *sqlx.DB) *service {
 // Start reset question asked and returns welcome message and the first question
 func (s *service) Start(
 	ctx context.Context,
-	qnrID uuid.UUID,
 	userID uuid.UUID) (StartResponse, error) {
 
 	return StartResponse{}, errors.New("not implemented")
@@ -29,7 +28,6 @@ func (s *service) Start(
 // Answer validates, saves and returns next question to ask
 func (s *service) Answer(
 	ctx context.Context,
-	qnrID uuid.UUID,
 	userID uuid.UUID,
 	answer Answer) (AnswerResponse, error) {
 

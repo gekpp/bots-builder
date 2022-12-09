@@ -35,9 +35,9 @@ type (
 	Service interface {
 		// Start reset question asked to the user
 		// and returns welcome message and the first question.
-		Start(ctx context.Context, qnrID uuid.UUID, userID uuid.UUID) (StartResponse, error)
+		Start(ctx context.Context, userID uuid.UUID) (StartResponse, error)
 
 		// Answer validates, saves anser and returns next question to ask.
-		Answer(ctx context.Context, qnrID uuid.UUID, userID uuid.UUID, answer Answer) (AnswerResponse, error)
+		Answer(ctx context.Context, userID uuid.UUID, answer Answer) (AnswerResponse, error)
 	}
 )
