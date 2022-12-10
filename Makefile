@@ -17,8 +17,7 @@ include .env/.run.env
 export
 endif
 run:
-	go build cmd/
-	go run cmd/main.go
+	go run cmd/*.go
 
 .PHONY: run-arkady
 ifeq ($(MAKECMDGOALS),run-arkady)
@@ -26,4 +25,4 @@ include .env/.run-arkady.env
 export
 endif
 run-arkady:
-	go run cmd/main.go
+	go run cmd/*.go
