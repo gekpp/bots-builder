@@ -17,6 +17,7 @@ include .env/.run.env
 export
 endif
 run:
+	go build cmd/
 	go run cmd/main.go
 
 .PHONY: run-arkady
