@@ -39,7 +39,7 @@ func (s *service) Start(
 		return StartResponse{}, fmt.Errorf("could not get first question: repo.getFirstQuestion: %v", err)
 	}
 
-	if err := s.r.SaveAskedQuestion(ctx, s.qnrID, userID, q.ID); err != nil {
+	if err := s.r.saveAskedQuestion(ctx, s.qnrID, userID, q.ID); err != nil {
 		return StartResponse{}, fmt.Errorf("could not save asked question: repo.SaveAskedQuestion: %v", err)
 	}
 
@@ -123,7 +123,7 @@ func (s *service) getNextQuestion(ctx context.Context, q question, a Answer) (qu
 		return question{}, errNoMoreQuestions
 	}
 
-	q, err := s.r.GetQuestion(ctx, nextQID.UUID)
+	q, err := s.r.getQuestion(ctx, nextQID.UUID)
 	if err != nil {
 		return question{}, fmt.Errorf("repo.GetQuestion: %v", err)
 	}

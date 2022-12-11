@@ -43,12 +43,6 @@ func (r *repo) getQuestionAnswerOptions(ctx context.Context, qID uuid.UUID) ([]a
 	return []answerOption{}, errors.New("not implemented")
 }
 
-// getNextQuestionByRank returns the question Q of the questionnaire[id=qnrID]
-// with rank greather than
-func (r *repo) getNextQuestionByRank(ctx context.Context, qnrID uuid.UUID, rank int) (question, error) {
-	return question{}, errors.New("not implemented")
-}
-
 // GetLatestAskedQuestion looks up for latest asked question and returns it or
 // errNotFound
 func (r *repo) getLatestAskedQuestion(
@@ -59,14 +53,14 @@ func (r *repo) getLatestAskedQuestion(
 	return question{}, errors.New("not implemented")
 }
 
-func (r *repo) GetQuestion(
+func (r *repo) getQuestion(
 	ctx context.Context,
 	id uuid.UUID) (question, error) {
 	return question{}, errors.New("not implemented")
 }
 
-// SaveAskedQuestion saves question as asked
-func (r *repo) SaveAskedQuestion(
+// ыaveAskedQuestion saves question as asked
+func (r *repo) saveAskedQuestion(
 	ctx context.Context,
 	qnrID uuid.UUID,
 	userID uuid.UUID,
