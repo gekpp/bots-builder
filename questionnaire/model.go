@@ -1,13 +1,25 @@
 package questionnaire
 
-import "github.com/google/uuid"
+import (
+	"errors"
+
+	"github.com/google/uuid"
+)
+
+const invalidAnswerInfoMessage = "Пожалуйста, ответьте одним из предложенных вариантов ответа или значением из заданного интервала."
+
+var (
+	errNoAnswerOptions = errors.New("no answer options found")
+	errNoMoreQuestions = errors.New("no more questions")
+	errInvalidAnswer   = errors.New("invalid answer")
+)
 
 type (
 	questionKind string
 
 	questionnaire struct {
 		ID              uuid.UUID
-		WelcomMessage   string
+		WelcomeMessage  string
 		GoodbyeMessage  string
 		StartQuestionID uuid.UUID
 	}
@@ -15,24 +27,27 @@ type (
 	question struct {
 		QuestionnaireID uuid.UUID
 		ID              uuid.UUID
-		Text            string
+		Question        string
 		Kind            questionKind
-		NextQuestionID  uuid.UUID
+		NextQuestionID  uuid.NullUUID
+		AnswerOptions   []answerOption
+		RangeAnswer     rangeAnswer
+		Rank            int
 	}
 
 	answerOption struct {
 		ID             uuid.UUID
 		QuestionID     uuid.UUID
-		Text           string
-		NextQuestionID uuid.UUID
+		Answer         string
+		NextQuestionID uuid.NullUUID
 		Rank           int
 	}
 
 	rangeAnswer struct {
 		ID             uuid.UUID
 		QuestionID     uuid.UUID
-		Min            int
-		Max            int
+		Minimum        int
+		Maximum        int
 		NextQuestionID uuid.UUID
 		Rank           int
 	}
