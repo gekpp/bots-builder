@@ -1,4 +1,4 @@
-package user_service
+package users
 
 import (
 	"fmt"
@@ -7,55 +7,77 @@ import (
 
 type (
 	User struct {
-		ID       uuid.UUID
-		UserName string
-	}
-
-	UserService interface {
-		CreateOrGetTelegramUser(userName string) (*User, error)
-		GetTelegramUser(TelegramUserDescription) (*User, error)
+		ID         uuid.UUID
+		TelegramID string
+		FirstName  string
+		LastName   string
+		UserName   string
 	}
 
 	TelegramUserDescription struct {
-		ID uuid.UUID
-		// ...
+		ID         uuid.UUID
+		TelegramID string
+		FirstName  string
+		LastName   string
+		UserName   string
 	}
 
 	service struct {
-		storage UserStorage
+		repo UserStorage
 	}
 )
 
 func NewService(storage UserStorage) *service {
 	return &service{
-		storage: storage,
+		repo: storage,
 	}
 }
 
-func (s *service) CreateOrGetTelegramUser(userName string) (*User, error) {
-	if userName == "" {
-		return nil, fmt.Errorf("empty username")
+func (s *service) CreateOrGetTelegramUser(info TelegramUserDescription) (*User, error) {
+	if info.TelegramID == "" {
+		return nil, fmt.Errorf("empty telegram id")
 	}
 
-	strgUser, err := s.storage.Create(userName)
+	strgUser, err := s.repo.GetOrCreate(info)
 	if err != nil {
-		return nil, fmt.Errorf("can not create user: %w", err)
+		return nil, err
 	}
 
 	return &User{
-		ID:       strgUser.ID,
-		UserName: strgUser.UserName,
+		ID:         strgUser.ID,
+		TelegramID: strgUser.TelegramID,
+		FirstName:  strgUser.FirstName,
+		LastName:   strgUser.LastName,
+		UserName:   strgUser.UserName,
 	}, nil
 }
 
-func (s *service) GetTelegramUser(info TelegramUserDescription) (*User, error) {
-	user, err := s.storage.GetByID(info.ID)
+func (s *service) GetUserByID(info TelegramUserDescription) (*User, error) {
+	user, err := s.repo.GetByID(info.ID)
 	if err != nil {
 		return nil, fmt.Errorf("can not get user by id: %w", err)
 	}
 
 	return &User{
-		ID:       user.ID,
-		UserName: user.UserName,
+		ID:         user.ID,
+		TelegramID: user.TelegramID,
+		FirstName:  user.FirstName,
+		LastName:   user.LastName,
+		UserName:   user.UserName,
+	}, nil
+}
+
+func (s *service) GetUserByTelegramID(info TelegramUserDescription) (*User, error) {
+	user, err := s.repo.GetByTelegramID(info.TelegramID)
+	if err != nil {
+		return nil, fmt.Errorf("can not get user by telegram_id: %w", err)
+	}
+
+	return &User{
+		ID:         user.ID,
+		TelegramID: user.TelegramID,
+		FirstName:  user.FirstName,
+		LastName:   user.LastName,
+		UserName:   user.UserName,
 	}, nil
 }

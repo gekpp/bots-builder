@@ -1,5 +1,8 @@
 CREATE TABLE users (
     id uuid NOT NULL primary key,
+    telegram_id varchar(50) unique,
+    first_name varchar(50),
+    last_name varchar(50),
     user_name varchar(50)
 );
 

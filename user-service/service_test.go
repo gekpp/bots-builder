@@ -1,7 +1,7 @@
-package user_service
+package users
 
 import (
-	st "github.com/gekpp/bots-builder/storage"
+	st "github.com/gekpp/bots-builder/internal/infra"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"strconv"
@@ -12,29 +12,58 @@ import (
 // TestService Was made for local tests
 func TestService(t *testing.T) {
 	t.Skip()
-	con := st.Connect(st.ConnectionInfo{
-		Host:     "localhost",
-		Port:     5432,
-		Name:     "tgbot",
-		Username: "postgres",
-		Password: "postgres",
-		Timeout:  15,
-		SSLMode:  "disable",
-	})
+	con := st.ConnectDB(
+		"localhost",
+		5432,
+		"tgbot",
+		"postgres",
+		"postgres",
+		15,
+		"disable",
+	)
 	storage, err := NewStorage(con)
 	require.NoError(t, err)
 
-	name := strconv.FormatInt(time.Now().Unix(), 10)
+	telegramID := strconv.FormatInt(time.Now().Unix(), 10)
 	service := NewService(storage)
 
-	user, err := service.CreateOrGetTelegramUser(name)
+	id := uuid.New()
+
+	description := TelegramUserDescription{
+		ID:         id,
+		TelegramID: telegramID,
+		FirstName:  "test",
+		LastName:   "test",
+		UserName:   "test",
+	}
+
+	expectedUser := User{
+		ID:         id,
+		TelegramID: telegramID,
+		FirstName:  "test",
+		LastName:   "test",
+		UserName:   "test",
+	}
+
+	// first try
+	user, err := service.CreateOrGetTelegramUser(description)
 	require.NoError(t, err)
+	require.Equal(t, expectedUser, *user)
 
-	user, err = service.GetTelegramUser(TelegramUserDescription{ID: user.ID})
+	//try to create existing user
+	user, err = service.CreateOrGetTelegramUser(description)
 	require.NoError(t, err)
+	require.Equal(t, expectedUser, *user)
 
-	require.Equal(t, name, user.UserName)
+	// get user
+	user, err = service.GetUserByID(description)
+	require.NoError(t, err)
+	require.Equal(t, expectedUser, *user)
 
-	_, err = service.GetTelegramUser(TelegramUserDescription{ID: uuid.New()})
+	user, err = service.GetUserByTelegramID(description)
+	require.NoError(t, err)
+	require.Equal(t, expectedUser, *user)
+
+	_, err = service.GetUserByID(TelegramUserDescription{ID: uuid.New()})
 	require.ErrorIs(t, err, ErrNotFound)
 }
