@@ -9,7 +9,6 @@ import (
 const invalidAnswerInfoMessage = "Пожалуйста, ответьте одним из предложенных вариантов ответа или значением из заданного интервала."
 
 var (
-	errNoAnswerOptions = errors.New("no answer options found")
 	errNoMoreQuestions = errors.New("no more questions")
 	errInvalidAnswer   = errors.New("invalid answer")
 )
@@ -18,38 +17,35 @@ type (
 	questionKind string
 
 	questionnaire struct {
-		ID              uuid.UUID
-		WelcomeMessage  string
-		GoodbyeMessage  string
-		StartQuestionID uuid.UUID
+		ID              uuid.UUID     `db:"id"`
+		WelcomeMessage  string        `db:"welcome_message"`
+		GoodbyeMessage  string        `db:"goodbye_message"`
+		StartQuestionID uuid.NullUUID `db:"start_question_id"`
 	}
 
 	question struct {
-		QuestionnaireID uuid.UUID
-		ID              uuid.UUID
-		Question        string
-		Kind            questionKind
-		NextQuestionID  uuid.NullUUID
-		AnswerOptions   []answerOption
-		RangeAnswer     rangeAnswer
-		Rank            int
+		QuestionnaireID uuid.UUID      `db:"questionnaire_id"`
+		ID              uuid.UUID      `db:"id"`
+		Question        string         `db:"question"`
+		Kind            questionKind   `db:"kind"`
+		NextQuestionID  uuid.NullUUID  `db:"next_question_id"`
+		AnswerOptions   []answerOption `db:"-"`
+		RangeAnswer     rangeAnswer    `db:"-"`
 	}
 
 	answerOption struct {
-		ID             uuid.UUID
-		QuestionID     uuid.UUID
-		Answer         string
-		NextQuestionID uuid.NullUUID
-		Rank           int
+		ID             uuid.UUID     `db:"id"`
+		QuestionID     uuid.UUID     `db:"question_id"`
+		Answer         string        `db:"answer"`
+		NextQuestionID uuid.NullUUID `db:"next_question_id"`
+		Rank           int           `db:"rank"`
 	}
 
 	rangeAnswer struct {
-		ID             uuid.UUID
-		QuestionID     uuid.UUID
-		Minimum        int
-		Maximum        int
-		NextQuestionID uuid.UUID
-		Rank           int
+		ID         uuid.UUID `db:"id"`
+		QuestionID uuid.UUID `db:"question_id"`
+		Minimum    int       `db:"minimum"`
+		Maximum    int       `db:"maximum"`
 	}
 )
 

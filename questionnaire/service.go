@@ -31,16 +31,16 @@ func (s *service) Start(
 
 	qnr, err := s.r.getQuestionnaire(ctx, s.qnrID)
 	if err != nil {
-		return StartResponse{}, fmt.Errorf("could not get questionnaire: repo.getQuestionnaire: %v", err)
+		return StartResponse{}, fmt.Errorf("could not get questionnaire: repo.getQuestionnaire: %w", err)
 	}
 
 	q, err := s.r.getFirstQuestion(ctx, s.qnrID)
 	if err != nil {
-		return StartResponse{}, fmt.Errorf("could not get first question: repo.getFirstQuestion: %v", err)
+		return StartResponse{}, fmt.Errorf("could not get first question: repo.getFirstQuestion: %w", err)
 	}
 
 	if err := s.r.saveAskedQuestion(ctx, s.qnrID, userID, q.ID); err != nil {
-		return StartResponse{}, fmt.Errorf("could not save asked question: repo.SaveAskedQuestion: %v", err)
+		return StartResponse{}, fmt.Errorf("could not save asked question: repo.SaveAskedQuestion: %w", err)
 	}
 
 	return StartResponse{

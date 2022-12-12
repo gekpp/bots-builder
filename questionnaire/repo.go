@@ -2,6 +2,7 @@ package questionnaire
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 
@@ -15,32 +16,71 @@ type (
 	}
 )
 
-var (
-	errNotFound error = errors.New("not found")
-)
-
 func (r *repo) getQuestionnaire(ctx context.Context, qnrID uuid.UUID) (questionnaire, error) {
-	return questionnaire{}, errors.New("not implemented")
+	res := questionnaire{}
+	db := r.db.Unsafe()
+	err := db.GetContext(ctx,
+		&res,
+		`SELECT * FROM questionnaires WHERE id=$1`,
+		qnrID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return questionnaire{}, ErrNotFound
+	}
+	if err != nil {
+		return questionnaire{}, err
+	}
+
+	return res, nil
 }
 
 func (r *repo) getFirstQuestion(ctx context.Context, qnrID uuid.UUID) (question, error) {
-	res := question{}
 
-	if res.Kind == questionKindClose {
-		opts, err := r.getQuestionAnswerOptions(ctx, res.ID)
-		if err != nil {
-			return res, fmt.Errorf("repo.getQuestionAnswerOptions: %v", err)
-		}
-		if len(opts) == 0 {
-			return res, errNoAnswerOptions
-		}
+	qnr, err := r.getQuestionnaire(ctx, qnrID)
+	if err != nil {
+		return question{}, fmt.Errorf("repo.getQuestionnaire: %w", err)
 	}
 
-	return res, errors.New("not implemented")
+	if !qnr.StartQuestionID.Valid {
+		return question{}, ErrNoStartQuestion
+	}
+
+	res, err := r.getQuestion(ctx, qnr.StartQuestionID.UUID)
+	if err != nil {
+		return question{}, fmt.Errorf("repo.getQuestion: %w", err)
+	}
+
+	return res, nil
 }
 
 func (r *repo) getQuestionAnswerOptions(ctx context.Context, qID uuid.UUID) ([]answerOption, error) {
-	return []answerOption{}, errors.New("not implemented")
+	db := r.db.Unsafe()
+	res := []answerOption{}
+	err := db.SelectContext(
+		ctx,
+		&res,
+		"SELECT * FROM answer_options WHERE question_id=$1 ORDER BY rank ASC", qID)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (r *repo) getQuestionRangeAnswer(ctx context.Context, qID uuid.UUID) (rangeAnswer, error) {
+	db := r.db.Unsafe()
+	res := rangeAnswer{}
+	err := db.GetContext(
+		ctx,
+		&res,
+		"SELECT * FROM range_answer WHERE question_id=$1", qID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return rangeAnswer{}, fmt.Errorf("range answer for question not found: %w", ErrNotFound)
+	}
+	if err != nil {
+		return rangeAnswer{}, err
+	}
+
+	return res, nil
 }
 
 // GetLatestAskedQuestion looks up for latest asked question and returns it or
@@ -56,7 +96,32 @@ func (r *repo) getLatestAskedQuestion(
 func (r *repo) getQuestion(
 	ctx context.Context,
 	id uuid.UUID) (question, error) {
-	return question{}, errors.New("not implemented")
+
+	db := r.db.Unsafe()
+	res := question{}
+	err := db.GetContext(ctx, &res, "SELECT * FROM questions WHERE id=$1", id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return question{}, fmt.Errorf("question[id=%v] not found: %w", id, ErrNotFound)
+	}
+
+	switch res.Kind {
+	case questionKindClose:
+		opts, err := r.getQuestionAnswerOptions(ctx, res.ID)
+		if err != nil {
+			return question{}, fmt.Errorf("repo.getQuestionAnswerOptions: %w", err)
+		}
+		if len(opts) == 0 {
+			return res, ErrNoAnswerOptions
+		}
+		res.AnswerOptions = opts
+	case questionKindRange:
+		rng, err := r.getQuestionRangeAnswer(ctx, res.ID)
+		if err != nil {
+			return question{}, fmt.Errorf("repo.getQuestionRangeAnswer: %w", err)
+		}
+		res.RangeAnswer = rng
+	}
+	return res, nil
 }
 
 // ыaveAskedQuestion saves question as asked

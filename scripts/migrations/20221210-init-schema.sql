@@ -13,6 +13,7 @@ create table questionnaires (
     name text not null,
     welcome_message text not null,
     goodbye_message text not null,
+    start_question_id uuid,
     created_at timestamp default now() not null,
     updated_at timestamp default now() not null
 );
@@ -25,12 +26,9 @@ create table questions (
     kind question_kind not null,
     next_question_id uuid,
     questionnaire_id uuid not null constraint questions_questionnaires_id_fk references questionnaires,
-    rank int not null,
     created_at timestamp default now() not null,
     updated_at timestamp default now() not null
 );
-
-create unique index questions_questionnaire_id_rank_uindex on questions (questionnaire_id, rank);
 
 create table range_answer (
     id uuid default gen_random_uuid() not null constraint range_answer_pk primary key,
