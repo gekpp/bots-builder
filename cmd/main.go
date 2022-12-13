@@ -18,11 +18,10 @@ var (
 	qnrService         = questionnaire.NewDummy(uuid.MustParse(argQuestionnaireID))
 )
 
-// msgHandler: returns bool if loop needs to continue
-func handleMessage(qnr questionnaire.Service, ctx context.Context, bot *tgbotapi.BotAPI, update tgbotapi.Update) bool {
+func handleMessage(qnr questionnaire.Service, ctx context.Context, bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	chatID := update.Message.Chat.ID
 	if update.Message == nil {
-		return true
+		return
 	}
 
 	if update.Message.IsCommand() {
@@ -50,7 +49,7 @@ func handleMessage(qnr questionnaire.Service, ctx context.Context, bot *tgbotapi
 			}
 		}
 
-		return true
+		return
 	}
 
 	text := update.Message.Text
@@ -66,7 +65,7 @@ func handleMessage(qnr questionnaire.Service, ctx context.Context, bot *tgbotapi
 		logrus.Error(err)
 	}
 
-	return false
+	return
 }
 
 func main() {
@@ -83,9 +82,6 @@ func main() {
 	updates := bot.GetUpdatesChan(updateConfig)
 
 	for update := range updates {
-		needsContuine := handleMessage(qnr, ctx, bot, update)
-		if needsContuine {
-			continue
-		}
+		handleMessage(qnr, ctx, bot, update)
 	}
 }
