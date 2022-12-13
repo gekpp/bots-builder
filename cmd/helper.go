@@ -1,7 +1,7 @@
 package main
 
 import (
-	"reflect"
+	"errors"
 
 	"github.com/gekpp/bots-builder/questionnaire"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -20,11 +20,22 @@ func generateKeyboard(qnrResponse questionnaire.Question) tgbotapi.ReplyKeyboard
 	return keyboard
 }
 
-func sendMessage(bot *tgbotapi.BotAPI, chatID int64, msgText string, keyboard tgbotapi.ReplyKeyboardMarkup) error {
+func sendMessageWithKeyboard(bot *tgbotapi.BotAPI, chatID int64, msgText string, keyboard tgbotapi.ReplyKeyboardMarkup) error {
 	msg := tgbotapi.NewMessage(chatID, msgText)
-	if !reflect.DeepEqual(keyboard, tgbotapi.ReplyKeyboardMarkup{}) {
-		msg.ReplyMarkup = keyboard
+	msg.ReplyMarkup = keyboard
+	if len(keyboard.Keyboard) == 0 {
+		return errors.New("keyboard shouldn't be empty")
 	}
+
+	if _, err := bot.Send(msg); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func sendMessagePlain(bot *tgbotapi.BotAPI, chatID int64, msgText string) error {
+	msg := tgbotapi.NewMessage(chatID, msgText)
 
 	if _, err := bot.Send(msg); err != nil {
 		return err

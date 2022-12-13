@@ -8,13 +8,66 @@ import (
 	"github.com/gekpp/env"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 )
 
 var (
 	argQuestionnaireID = env.MustString("QNR_ID")
 	botToken           = env.MustString("TOKEN")
+	debug              = env.GetBool("DEBUG", false)
 	qnrService         = questionnaire.NewDummy(uuid.MustParse(argQuestionnaireID))
 )
+
+// msgHandler: returns bool if loop needs to continue
+func handleMessage(qnr questionnaire.Service, ctx context.Context, bot *tgbotapi.BotAPI, update tgbotapi.Update) bool {
+	chatID := update.Message.Chat.ID
+	if update.Message == nil {
+		return true
+	}
+
+	if update.Message.IsCommand() {
+		var keyboard tgbotapi.ReplyKeyboardMarkup
+		switch update.Message.Command() {
+		case "start":
+			resp, err := qnr.Start(ctx, uuid.New())
+			if err != nil {
+				logrus.Error(err)
+			}
+			err = sendMessagePlain(bot, chatID, string(resp.Welcome))
+			if err != nil {
+				logrus.Error(err)
+			}
+
+			keyboard = generateKeyboard(resp.Question)
+			err = sendMessageWithKeyboard(bot, chatID, string(resp.Question.Text), keyboard)
+			if err != nil {
+				logrus.Error(err)
+			}
+		default:
+			err := sendMessagePlain(bot, chatID, "Такой команды нет.")
+			if err != nil {
+				logrus.Error(err)
+			}
+		}
+
+		return true
+	}
+
+	text := update.Message.Text
+
+	resp, err := qnr.Answer(ctx, uuid.New(), questionnaire.Answer(text))
+	if err != nil {
+		logrus.Error(err)
+	}
+
+	keyboard := generateKeyboard(resp.Question)
+	err = sendMessageWithKeyboard(bot, chatID, string(resp.Question.Text), keyboard)
+	if err != nil {
+		logrus.Error(err)
+	}
+
+	return false
+}
 
 func main() {
 	qnr := questionnaire.NewDummy(uuid.New())
@@ -24,53 +77,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	bot.Debug = false
+	bot.Debug = debug
 	updateConfig := tgbotapi.NewUpdate(0)
 	updateConfig.Timeout = 30
 	updates := bot.GetUpdatesChan(updateConfig)
 
 	for update := range updates {
-		chatID := update.Message.Chat.ID
-		if update.Message == nil {
+		needsContuine := handleMessage(qnr, ctx, bot, update)
+		if needsContuine {
 			continue
-		}
-
-		if update.Message.IsCommand() {
-			var resp questionnaire.StartResponse
-			var keyboard tgbotapi.ReplyKeyboardMarkup
-			switch update.Message.Command() {
-			case "start":
-				resp, err = qnr.Start(ctx, uuid.New())
-				if err != nil {
-					log.Fatal(err)
-				}
-			}
-
-			err := sendMessage(bot, chatID, string(resp.Welcome), keyboard)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			keyboard = generateKeyboard(resp.Question)
-			err = sendMessage(bot, chatID, string(resp.Question.Text), keyboard)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			continue
-		}
-
-		text := update.Message.Text
-
-		resp, err := qnr.Answer(ctx, uuid.New(), questionnaire.Answer(text))
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		keyboard := generateKeyboard(resp.Question)
-		err = sendMessage(bot, chatID, string(resp.Question.Text), keyboard)
-		if err != nil {
-			log.Fatal(err)
 		}
 	}
 }
