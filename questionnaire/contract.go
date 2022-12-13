@@ -2,8 +2,16 @@ package questionnaire
 
 import (
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
+)
+
+// Errors
+var (
+	ErrNoStartQuestion = errors.New("questionnaire has no start question")
+	ErrNotFound        = errors.New("not found")
+	ErrNoAnswerOptions = errors.New("no answer options found")
 )
 
 type (
