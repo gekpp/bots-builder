@@ -1,6 +1,7 @@
 package users
 
 import (
+	"context"
 	st "github.com/gekpp/bots-builder/internal/infra"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
@@ -11,7 +12,8 @@ import (
 
 // TestService Was made for local tests
 func TestService(t *testing.T) {
-	t.Skip()
+	//t.Skip()
+	ctx := context.Background()
 	con := st.ConnectDB(
 		"localhost",
 		5432,
@@ -21,11 +23,10 @@ func TestService(t *testing.T) {
 		15,
 		"disable",
 	)
-	storage, err := NewStorage(con)
-	require.NoError(t, err)
 
 	telegramID := strconv.FormatInt(time.Now().Unix(), 10)
-	service := NewService(storage)
+	service, err := NewService(con)
+	require.NoError(t, err)
 
 	id := uuid.New()
 
@@ -46,24 +47,24 @@ func TestService(t *testing.T) {
 	}
 
 	// first try
-	user, err := service.CreateOrGetTelegramUser(description)
+	user, err := service.CreateOrGetTelegramUser(ctx, description)
 	require.NoError(t, err)
-	require.Equal(t, expectedUser, *user)
+	require.Equal(t, expectedUser, user)
 
 	//try to create existing user
-	user, err = service.CreateOrGetTelegramUser(description)
+	user, err = service.CreateOrGetTelegramUser(ctx, description)
 	require.NoError(t, err)
-	require.Equal(t, expectedUser, *user)
+	require.Equal(t, expectedUser, user)
 
 	// get user
-	user, err = service.GetUserByID(description)
+	user, err = service.GetByID(ctx, description.ID)
 	require.NoError(t, err)
-	require.Equal(t, expectedUser, *user)
+	require.Equal(t, expectedUser, user)
 
-	user, err = service.GetUserByTelegramID(description)
+	user, err = service.GetByTelegramID(ctx, description.TelegramID)
 	require.NoError(t, err)
-	require.Equal(t, expectedUser, *user)
+	require.Equal(t, expectedUser, user)
 
-	_, err = service.GetUserByID(TelegramUserDescription{ID: uuid.New()})
+	_, err = service.GetByID(ctx, uuid.New())
 	require.ErrorIs(t, err, ErrNotFound)
 }

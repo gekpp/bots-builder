@@ -2,18 +2,17 @@ package users
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
 
 type (
-	repo struct {
+	repository struct {
 		db *sqlx.DB
 	}
 
-	StorageUser struct {
+	storageUser struct {
 		ID         uuid.UUID `db:"id"`
 		TelegramID string    `db:"telegram_id"`
 		FirstName  string    `db:"first_name"`
@@ -26,12 +25,8 @@ const (
 	usersTableName = "users"
 )
 
-var (
-	ErrNotFound = errors.New("not found")
-)
-
-func NewStorage(db *sql.DB) (*repo, error) {
-	s := repo{
+func newRepository(db *sql.DB) (*repository, error) {
+	s := repository{
 		db: sqlx.NewDb(db, usersTableName),
 	}
 
@@ -46,7 +41,7 @@ func NewStorage(db *sql.DB) (*repo, error) {
 	return &s, nil
 }
 
-func (s *repo) GetOrCreate(user TelegramUserDescription) (*StorageUser, error) {
+func (s *repository) getOrCreate(user TelegramUserDescription) (*storageUser, error) {
 	query := fmt.Sprintf(`
 		INSERT INTO %s (id,  telegram_id, user_name, first_name, last_name)
 		VALUES ($1, $2, $3, $4, $5)
@@ -59,26 +54,25 @@ func (s *repo) GetOrCreate(user TelegramUserDescription) (*StorageUser, error) {
 	queryRow := s.db.QueryRowx(
 		query, user.ID.String(), user.TelegramID, user.UserName, user.FirstName, user.LastName)
 
-	s.db.Driver()
 	return getFromQueryRow(queryRow)
 }
 
-func (s *repo) GetByID(id uuid.UUID) (*StorageUser, error) {
+func (s *repository) getByID(id uuid.UUID) (*storageUser, error) {
 	queryRow := s.db.QueryRowx(
 		fmt.Sprintf(`SELECT id, telegram_id, user_name, first_name, last_name FROM %s WHERE id = $1`, s.db.DriverName()), id.String())
 
 	return getFromQueryRow(queryRow)
 }
 
-func (s *repo) GetByTelegramID(TelegramID string) (*StorageUser, error) {
+func (s *repository) getByTelegramID(telegramID string) (*storageUser, error) {
 	queryRow := s.db.QueryRowx(
-		fmt.Sprintf(`SELECT id, telegram_id, user_name, first_name, last_name FROM %s WHERE telegram_id = $1`, s.db.DriverName()), TelegramID)
+		fmt.Sprintf(`SELECT id, telegram_id, user_name, first_name, last_name FROM %s WHERE telegram_id = $1`, s.db.DriverName()), telegramID)
 
 	return getFromQueryRow(queryRow)
 }
 
-func getFromQueryRow(query *sqlx.Row) (*StorageUser, error) {
-	user := &StorageUser{}
+func getFromQueryRow(query *sqlx.Row) (*storageUser, error) {
+	user := &storageUser{}
 	err := query.StructScan(user)
 	if err == nil {
 		return user, nil

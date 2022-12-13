@@ -1,11 +1,28 @@
 package users
 
-import "github.com/google/uuid"
+import (
+	"errors"
+	"github.com/google/uuid"
+)
 
 type (
-	UserStorage interface {
-		GetOrCreate(user TelegramUserDescription) (*StorageUser, error)
-		GetByID(id uuid.UUID) (*StorageUser, error)
-		GetByTelegramID(telegramID string) (*StorageUser, error)
+	User struct {
+		ID         uuid.UUID
+		TelegramID string
+		FirstName  string
+		LastName   string
+		UserName   string
 	}
+
+	TelegramUserDescription struct {
+		ID         uuid.UUID
+		TelegramID string
+		FirstName  string
+		LastName   string
+		UserName   string
+	}
+)
+
+var (
+	ErrNotFound = errors.New("not found")
 )
