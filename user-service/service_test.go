@@ -12,7 +12,7 @@ import (
 
 // TestService Was made for local tests
 func TestService(t *testing.T) {
-	//t.Skip()
+	t.Skip()
 	ctx := context.Background()
 	con := st.ConnectDB(
 		"localhost",
