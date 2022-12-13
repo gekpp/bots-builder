@@ -10,7 +10,7 @@ require (
 
 require (
 	github.com/gekpp/env v0.0.1
-	github.com/lib/pq v1.2.0
+	github.com/lib/pq v1.10.7
 	github.com/testcontainers/testcontainers-go v0.15.0
 )
 
