@@ -38,7 +38,7 @@ func ConnectDB(
 	}
 
 	if err := db.Ping(); err != nil {
-		log.Fatalf("database is not available right now: %w", err)
+		log.Fatalf("database is not available right now: %v", err)
 	}
 
 	return db
