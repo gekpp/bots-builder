@@ -3,15 +3,17 @@ package infra
 import (
 	"database/sql"
 	"fmt"
-	_ "github.com/lib/pq"
 	"log"
+
+	_ "github.com/lib/pq"
 )
 
 type (
 	Option func(*sql.DB)
 )
 
-func ConnectDB(
+// MustConnectDB connects to DB
+func MustConnectDB(
 	Host string,
 	Port int,
 	Name string,
@@ -27,7 +29,7 @@ func ConnectDB(
 	)
 	db, err := sql.Open("postgres", dbConnStr)
 	if err != nil {
-		log.Fatalf("could not connect to database: %w", err)
+		log.Fatalf("could not connect to database: %v", err)
 	}
 
 	db.SetMaxOpenConns(50)
