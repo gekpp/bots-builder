@@ -14,7 +14,8 @@ var (
 )
 
 type (
-	questionKind string
+	questionKind      string
+	userQuestionState string
 
 	questionnaire struct {
 		ID              uuid.UUID     `db:"id"`
@@ -41,6 +42,15 @@ type (
 		Rank           int           `db:"rank"`
 	}
 
+	userAnswers struct {
+		ID              uuid.UUID         `db:"id"`
+		UserID          uuid.UUID         `db:"user_id"`
+		QuestionnaireID uuid.UUID         `db:"questionnaire_id"`
+		QuestionID      uuid.UUID         `db:"question_id"`
+		RawAnswer       string            `db:"raw_answer"`
+		QuestionState   userQuestionState `db:"question_state"`
+	}
+
 	rangeAnswer struct {
 		ID         uuid.UUID `db:"id"`
 		QuestionID uuid.UUID `db:"question_id"`
@@ -53,4 +63,9 @@ const (
 	questionKindClose questionKind = "close"
 	questionKindOpen  questionKind = "open"
 	questionKindRange questionKind = "range"
+)
+
+const (
+	answerStateAsked    userQuestionState = "asked"
+	answerStateAnswered userQuestionState = "answered"
 )
