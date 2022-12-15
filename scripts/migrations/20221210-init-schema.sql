@@ -1,7 +1,9 @@
-create table users (
-    id uuid default gen_random_uuid() not null constraint users_pk primary key,
-    telegram_user_id text,
-    telegram_username text,
+CREATE TABLE users (
+    id uuid default gen_random_uuid() NOT NULL primary key,
+    telegram_user_id varchar(50) unique,
+    first_name varchar(50),
+    last_name varchar(50),
+    telegram_user_name varchar(50),
     created_at timestamp without time zone default now() not null,
     updated_at timestamp without time zone default now() not null
 );
