@@ -60,9 +60,7 @@ create table user_answers (
     user_id uuid not null,
     questionnaire_id uuid not null,
     question_id uuid not null,
-    answer_option_id uuid,
-    range_answer_id uuid,
-    raw_answer text not null,
+    raw_answer text default '',
     created_at timestamp without time zone default now() not null,
     question_state user_question_state not null,
     updated_at timestamp without time zone default now() not null

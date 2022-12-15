@@ -142,3 +142,23 @@ VALUES
         '2022-12-12 22:46:28.126594',
         '2022-12-12 22:46:28.126594'
     );
+
+INSERT INTO public.user_answers (
+    id, 
+    user_id, 
+    questionnaire_id, 
+    question_id, 
+    raw_answer, 
+    created_at, 
+    question_state, 
+    updated_at) 
+VALUES (
+    '4c617a80-7c43-46ed-bc74-811fb07ed6f2', 
+    'fe3148b2-8743-4a03-ab13-9244d76d9152', 
+    'fe3148b2-8743-4a03-ab13-9244d76d9152', 
+    'fe3148b2-8743-4a03-ab13-9244d76d9152', 
+    '', 
+    '2022-12-15 16:49:26.726834', 
+    'asked', 
+    '2022-12-15 16:49:26.726834'
+    );

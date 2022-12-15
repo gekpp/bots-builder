@@ -124,14 +124,20 @@ func (r *repo) getQuestion(
 	return res, nil
 }
 
-// ыaveAskedQuestion saves question as asked
+// saveAskedQuestion saves question as asked
 func (r *repo) saveAskedQuestion(
 	ctx context.Context,
 	qnrID uuid.UUID,
 	userID uuid.UUID,
 	questionID uuid.UUID) error {
 
-	return errors.New("not implemented")
+	db := r.db.Unsafe()
+	_, err := db.ExecContext(ctx, "INSERT INTO user_answers (user_id, questionnaire_id, question_id, question_state) VALUES ($1, $2, $3, $4)", userID, qnrID, questionID, "asked")
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // saveAnswer saves answer and marks question as answered
@@ -141,5 +147,11 @@ func (r *repo) saveAnswer(
 	userID uuid.UUID,
 	answer Answer) error {
 
-	return errors.New("not implemented")
+	db := r.db.Unsafe()
+	_, err := db.ExecContext(ctx, "UPDATE user_answers SET raw_answer=$1, question_state='answered' WHERE user_id=$2 AND questionnaire_id=$3", answer, userID, qnrID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
