@@ -2,7 +2,6 @@ package questionnaire
 
 import (
 	"errors"
-	"time"
 
 	"github.com/google/uuid"
 )
@@ -48,10 +47,7 @@ type (
 		UserID          uuid.UUID         `db:"user_id"`
 		QuestionnaireID uuid.UUID         `db:"questionnaire_id"`
 		QuestionID      uuid.UUID         `db:"question_id"`
-		RangeAnswer     rangeAnswer       `db:"-"`
 		RawAnswer       string            `db:"raw_answer"`
-		CreatedAt       time.Time         `db:"created_at"`
-		UpdatedAt       time.Time         `db:"updated_at"`
 		QuestionState   userQuestionState `db:"question_state"`
 	}
 
@@ -70,6 +66,6 @@ const (
 )
 
 const (
-	answerStsteAsked    userQuestionState = "asked"
+	answerStateAsked    userQuestionState = "asked"
 	answerStateAnswered userQuestionState = "answered"
 )

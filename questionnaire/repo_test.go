@@ -306,7 +306,7 @@ func Test_repo_saveAnswer(t *testing.T) {
 				answer: "updated",
 			},
 			wantErr:     false,
-			expectState: "answered",
+			expectState: string(answerStateAnswered),
 		},
 	}
 	for _, tt := range tests {
@@ -319,7 +319,8 @@ func Test_repo_saveAnswer(t *testing.T) {
 			}
 
 			resp := userAnswers{}
-			err := r.db.GetContext(context.Background(), &resp, "SELECT * FROM user_answers WHERE id='4c617a80-7c43-46ed-bc74-811fb07ed6f2'")
+			db := r.db.Unsafe()
+			err := db.GetContext(context.Background(), &resp, "SELECT * FROM user_answers WHERE id='4c617a80-7c43-46ed-bc74-811fb07ed6f2'")
 			if err != nil {
 				t.Error(err)
 			}

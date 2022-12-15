@@ -132,7 +132,7 @@ func (r *repo) saveAskedQuestion(
 	questionID uuid.UUID) error {
 
 	db := r.db.Unsafe()
-	_, err := db.ExecContext(ctx, "INSERT INTO user_answers (user_id, questionnaire_id, question_id, question_state) VALUES ($1, $2, $3, $4)", userID, qnrID, questionID, "asked")
+	_, err := db.ExecContext(ctx, "INSERT INTO user_answers (user_id, questionnaire_id, question_id, question_state) VALUES ($1, $2, $3, $4)", userID, qnrID, questionID, answerStateAsked)
 	if err != nil {
 		return err
 	}
@@ -148,7 +148,7 @@ func (r *repo) saveAnswer(
 	answer Answer) error {
 
 	db := r.db.Unsafe()
-	_, err := db.ExecContext(ctx, "UPDATE user_answers SET raw_answer=$1, question_state='answered' WHERE user_id=$2 AND questionnaire_id=$3", answer, userID, qnrID)
+	_, err := db.ExecContext(ctx, "UPDATE user_answers SET raw_answer=$1, question_state=$4 WHERE user_id=$2 AND questionnaire_id=$3", answer, userID, qnrID, answerStateAnswered)
 	if err != nil {
 		return err
 	}
