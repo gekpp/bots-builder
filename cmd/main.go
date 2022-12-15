@@ -118,7 +118,7 @@ func handleTextMessage(
 	chatID int64,
 	qnr questionnaire.Service,
 	bot *tgbotapi.BotAPI) {
-	resp, err := qnr.Answer(ctx, uuid.New(), questionnaire.Answer(text))
+	resp, err := qnr.Answer(ctx, userID, questionnaire.Answer(text))
 	if err != nil {
 		logrus.Error(err)
 	}
