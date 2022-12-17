@@ -28,8 +28,8 @@ func TestMain(m *testing.M) {
 
 	// order matters
 	binds := []string{
-		fmt.Sprintf("%s/../scripts/migrations/20221210-init-schema.sql", workingDir),    // 1
-		fmt.Sprintf("%s/../scripts/migrations/20221212-test-init-data.sql", workingDir), // 1
+		fmt.Sprintf("%s/../scripts/migrations/20221210-init-schema.sql", workingDir),         // 1
+		fmt.Sprintf("%s/../scripts/migrations/data/20221212-test-init-data.sql", workingDir), // 1
 	}
 
 	bindsMap := map[string]string{}

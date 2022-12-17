@@ -92,6 +92,10 @@ func (s *service) Answer(
 		return AnswerResponse{}, fmt.Errorf("could not get next question: getNextQuestion: %v", err)
 	}
 
+	if err := s.r.saveAskedQuestion(ctx, qnr.ID, userID, nextQ.ID); err != nil {
+		return AnswerResponse{}, fmt.Errorf("could not save asked question: repo.saveAskedQuestion: %v", err)
+	}
+
 	return AnswerResponse{
 		Question: Question{
 			Text:          Message(nextQ.Question),
@@ -113,6 +117,9 @@ func (s *service) getNextQuestion(ctx context.Context, q question, a Answer) (qu
 		for _, op := range q.AnswerOptions {
 			if a == Answer(op.Answer) {
 				nextQID = op.NextQuestionID
+				if !nextQID.Valid {
+					nextQID = q.NextQuestionID
+				}
 			}
 		}
 	default:
