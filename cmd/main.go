@@ -55,6 +55,11 @@ func main() {
 }
 
 func handleUpdate(ctx context.Context, qnr questionnaire.Service, usr users.Service, bot *tgbotapi.BotAPI, update tgbotapi.Update) {
+	if update.Message == nil {
+		logrus.Warnf("NULL message: full update = %+v", update)
+		return
+	}
+
 	chatID := update.Message.Chat.ID
 	if update.Message == nil {
 		return
@@ -98,7 +103,7 @@ func handleCommand(
 			logrus.Error(err)
 		}
 
-		keyboard = generateKeyboard(resp.Question)
+		keyboard = generateKeyboard(resp.Question.AnswerOptions)
 		err = sendMessageWithKeyboard(bot, chatID, string(resp.Question.Text), keyboard)
 		if err != nil {
 			logrus.Error(err)
@@ -121,7 +126,6 @@ func handleTextMessage(
 	resp, err := qnr.Answer(ctx, userID, questionnaire.Answer(text))
 	if err != nil {
 		logrus.Errorf("qnr.Answer: %v", err)
-		return
 	}
 
 	if resp.Info != "" {
@@ -132,7 +136,7 @@ func handleTextMessage(
 	}
 
 	if len(resp.Question.AnswerOptions) > 0 {
-		keyboard := generateKeyboard(resp.Question)
+		keyboard := generateKeyboard(resp.Question.AnswerOptions)
 		err = sendMessageWithKeyboard(bot, chatID, string(resp.Question.Text), keyboard)
 	} else if resp.Question.Text != "" {
 		err = sendMessagePlain(bot, chatID, string(resp.Question.Text))

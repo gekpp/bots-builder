@@ -171,8 +171,9 @@ func (r *repo) saveAnswer(
 		WHERE 
 			user_id=$3
 			-- AND questionnaire_id=(SELECT questionnaire_id FROM questions WHERE id=$4)
-			AND question_id=$4`,
-		answer, answerStateAnswered, userID, questionID)
+			AND question_id=$4
+			AND question_state = $5`,
+		answer, answerStateAnswered, userID, questionID, answerStateAsked)
 	if err != nil {
 		return err
 	}

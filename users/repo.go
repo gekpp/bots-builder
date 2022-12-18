@@ -32,7 +32,7 @@ func newRepository(db *sqlx.DB) *repository {
 
 func (s *repository) getOrCreate(ctx context.Context, tgUser User) (user, error) {
 	res := user{}
-	query := `INSERT INTO users ( telegram_user_id, telegram_user_name, first_name, last_name)
+	query := `INSERT INTO users (telegram_user_id, telegram_user_name, first_name, last_name)
 		VALUES ($1, $2, $3, $4)
 		ON CONFLICT (telegram_user_id) DO UPDATE
 		SET telegram_user_name = excluded.telegram_user_name,
