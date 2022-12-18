@@ -159,12 +159,20 @@ func (r *repo) saveAskedQuestion(
 // saveAnswer saves answer and marks question as answered
 func (r *repo) saveAnswer(
 	ctx context.Context,
-	qnrID uuid.UUID,
 	userID uuid.UUID,
+	questionID uuid.UUID,
 	answer Answer) error {
 
 	db := r.db.Unsafe()
-	_, err := db.ExecContext(ctx, "UPDATE user_answers SET raw_answer=$1, question_state=$4 WHERE user_id=$2 AND questionnaire_id=$3", answer, userID, qnrID, answerStateAnswered)
+	_, err := db.ExecContext(ctx,
+		`UPDATE user_answers 
+		SET 
+			raw_answer=$1, question_state=$2
+		WHERE 
+			user_id=$3
+			-- AND questionnaire_id=(SELECT questionnaire_id FROM questions WHERE id=$4)
+			AND question_id=$4`,
+		answer, answerStateAnswered, userID, questionID)
 	if err != nil {
 		return err
 	}

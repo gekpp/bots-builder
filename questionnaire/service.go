@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
 
 	"github.com/google/uuid"
@@ -78,12 +79,13 @@ func (s *service) Answer(
 		}, err
 	}
 
-	if err := s.r.saveAnswer(ctx, qnr.ID, userID, answer); err != nil {
+	if err := s.r.saveAnswer(ctx, userID, latestQuestion.ID, answer); err != nil {
 		return AnswerResponse{}, fmt.Errorf("could not save answer: repo.saveAnswer: %v", err)
 	}
 
 	nextQ, err := s.getNextQuestion(ctx, latestQuestion, answer)
 	if errors.Is(err, errNoMoreQuestions) {
+		log.Println("No more questions")
 		return AnswerResponse{
 			Info: Message(qnr.GoodbyeMessage),
 		}, nil

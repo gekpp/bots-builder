@@ -86,7 +86,6 @@ func handleCommand(
 	qnr questionnaire.Service,
 	bot *tgbotapi.BotAPI) {
 
-	log.Println("handling command")
 	var keyboard tgbotapi.ReplyKeyboardMarkup
 	switch command {
 	case "start":
@@ -121,17 +120,25 @@ func handleTextMessage(
 	bot *tgbotapi.BotAPI) {
 	resp, err := qnr.Answer(ctx, userID, questionnaire.Answer(text))
 	if err != nil {
-		logrus.Error(err)
+		logrus.Errorf("qnr.Answer: %v", err)
+		return
+	}
+
+	if resp.Info != "" {
+		err = sendMessagePlain(bot, chatID, string(resp.Info))
+		if err != nil {
+			logrus.Errorf("Sending info message: %v", err)
+		}
 	}
 
 	if len(resp.Question.AnswerOptions) > 0 {
 		keyboard := generateKeyboard(resp.Question)
 		err = sendMessageWithKeyboard(bot, chatID, string(resp.Question.Text), keyboard)
-	} else {
+	} else if resp.Question.Text != "" {
 		err = sendMessagePlain(bot, chatID, string(resp.Question.Text))
 	}
 	if err != nil {
-		logrus.Error(err)
+		logrus.Errorf("Sending question text: %v", err)
 	}
 	return
 }

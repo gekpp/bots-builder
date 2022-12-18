@@ -282,17 +282,17 @@ func Test_repo_saveAnswer(t *testing.T) {
 		db *sqlx.DB
 	}
 	type args struct {
-		ctx    context.Context
-		qnrID  uuid.UUID
-		userID uuid.UUID
-		answer Answer
+		ctx        context.Context
+		questionID uuid.UUID
+		userID     uuid.UUID
+		answer     Answer
 	}
 	tests := []struct {
 		name        string
 		fields      fields
 		args        args
 		wantErr     bool
-		expectState string
+		expectState userQuestionState
 	}{
 		{
 			name: "update_value",
@@ -300,13 +300,13 @@ func Test_repo_saveAnswer(t *testing.T) {
 				db: sqlx.NewDb(db, "postgres"),
 			},
 			args: args{
-				ctx:    context.Background(),
-				qnrID:  uuid.MustParse("fe3148b2-8743-4a03-ab13-9244d76d9152"),
-				userID: uuid.MustParse("fe3148b2-8743-4a03-ab13-9244d76d9152"),
-				answer: "updated",
+				ctx:        context.Background(),
+				userID:     uuid.MustParse("fe3148b2-8743-4a03-ab13-9244d76d9152"),
+				questionID: uuid.MustParse("70ac2bd8-4501-40b7-b993-dd1d84f096b9"),
+				answer:     "updated",
 			},
 			wantErr:     false,
-			expectState: string(answerStateAnswered),
+			expectState: answerStateAnswered,
 		},
 	}
 	for _, tt := range tests {
@@ -314,19 +314,15 @@ func Test_repo_saveAnswer(t *testing.T) {
 			r := &repo{
 				db: tt.fields.db,
 			}
-			if err := r.saveAnswer(tt.args.ctx, tt.args.qnrID, tt.args.userID, tt.args.answer); (err != nil) != tt.wantErr {
+			if err := r.saveAnswer(tt.args.ctx, tt.args.userID, tt.args.questionID, tt.args.answer); (err != nil) != tt.wantErr {
 				t.Errorf("repo.saveAnswer() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
 			resp := userAnswers{}
 			db := r.db.Unsafe()
 			err := db.GetContext(context.Background(), &resp, "SELECT * FROM user_answers WHERE id='4c617a80-7c43-46ed-bc74-811fb07ed6f2'")
-			if err != nil {
-				t.Error(err)
-			}
-			if string(resp.QuestionState) != tt.expectState {
-				t.Error("got wrong question state")
-			}
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expectState, resp.QuestionState)
 		})
 	}
 }
