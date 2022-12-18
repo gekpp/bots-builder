@@ -7,15 +7,15 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func generateKeyboard(qnrResponse questionnaire.Question) tgbotapi.ReplyKeyboardMarkup {
+func generateKeyboard(options []questionnaire.Answer) tgbotapi.ReplyKeyboardMarkup {
 	keyboard := tgbotapi.NewReplyKeyboard()
 
-	for _, item := range qnrResponse.AnswerOptions {
+	for _, item := range options {
 		btnslc := []tgbotapi.KeyboardButton{}
 		btnslc = append(btnslc, tgbotapi.NewKeyboardButton(string(item)))
 		keyboard.Keyboard = append(keyboard.Keyboard, btnslc)
-		keyboard.OneTimeKeyboard = true
 	}
+	keyboard.OneTimeKeyboard = true
 
 	return keyboard
 }

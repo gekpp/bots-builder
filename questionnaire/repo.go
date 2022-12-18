@@ -90,7 +90,23 @@ func (r *repo) getLatestAskedQuestion(
 	qnrID uuid.UUID,
 	userID uuid.UUID) (question, error) {
 
-	return question{}, errors.New("not implemented")
+	var qID uuid.UUID
+
+	err := r.db.GetContext(ctx, &qID,
+		`SELECT question_id 
+		FROM user_answers
+		WHERE 
+			questionnaire_id=$1 and user_id=$2
+			and question_state='asked'
+		ORDER BY created_at DESC
+		LIMIT 1`, qnrID, userID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return question{}, fmt.Errorf("latest asked question not found: %w", ErrNotFound)
+	}
+	if err != nil {
+		return question{}, err
+	}
+	return r.getQuestion(ctx, qID)
 }
 
 func (r *repo) getQuestion(
@@ -143,12 +159,21 @@ func (r *repo) saveAskedQuestion(
 // saveAnswer saves answer and marks question as answered
 func (r *repo) saveAnswer(
 	ctx context.Context,
-	qnrID uuid.UUID,
 	userID uuid.UUID,
+	questionID uuid.UUID,
 	answer Answer) error {
 
 	db := r.db.Unsafe()
-	_, err := db.ExecContext(ctx, "UPDATE user_answers SET raw_answer=$1, question_state=$4 WHERE user_id=$2 AND questionnaire_id=$3", answer, userID, qnrID, answerStateAnswered)
+	_, err := db.ExecContext(ctx,
+		`UPDATE user_answers 
+		SET 
+			raw_answer=$1, question_state=$2
+		WHERE 
+			user_id=$3
+			-- AND questionnaire_id=(SELECT questionnaire_id FROM questions WHERE id=$4)
+			AND question_id=$4
+			AND question_state = $5`,
+		answer, answerStateAnswered, userID, questionID, answerStateAsked)
 	if err != nil {
 		return err
 	}

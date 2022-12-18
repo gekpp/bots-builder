@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
 
 	"github.com/google/uuid"
@@ -75,21 +76,26 @@ func (s *service) Answer(
 				Text:          Message(latestQuestion.Question),
 				AnswerOptions: getAnswerOptionsIfRequired(latestQuestion),
 			},
-		}, err
+		}, fmt.Errorf("%w: userID=%v, questionID=%v, answer=%v", err, userID, latestQuestion.ID, answer)
 	}
 
-	if err := s.r.saveAnswer(ctx, qnr.ID, userID, answer); err != nil {
+	if err := s.r.saveAnswer(ctx, userID, latestQuestion.ID, answer); err != nil {
 		return AnswerResponse{}, fmt.Errorf("could not save answer: repo.saveAnswer: %v", err)
 	}
 
 	nextQ, err := s.getNextQuestion(ctx, latestQuestion, answer)
 	if errors.Is(err, errNoMoreQuestions) {
+		log.Println("No more questions")
 		return AnswerResponse{
 			Info: Message(qnr.GoodbyeMessage),
 		}, nil
 	}
 	if err != nil {
 		return AnswerResponse{}, fmt.Errorf("could not get next question: getNextQuestion: %v", err)
+	}
+
+	if err := s.r.saveAskedQuestion(ctx, qnr.ID, userID, nextQ.ID); err != nil {
+		return AnswerResponse{}, fmt.Errorf("could not save asked question: repo.saveAskedQuestion: %v", err)
 	}
 
 	return AnswerResponse{
@@ -113,6 +119,9 @@ func (s *service) getNextQuestion(ctx context.Context, q question, a Answer) (qu
 		for _, op := range q.AnswerOptions {
 			if a == Answer(op.Answer) {
 				nextQID = op.NextQuestionID
+				if !nextQID.Valid {
+					nextQID = q.NextQuestionID
+				}
 			}
 		}
 	default:

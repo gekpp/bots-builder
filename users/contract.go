@@ -1,6 +1,7 @@
 package users
 
 import (
+	"context"
 	"errors"
 
 	"github.com/google/uuid"
@@ -19,3 +20,9 @@ type (
 var (
 	ErrNotFound = errors.New("not found")
 )
+
+type Service interface {
+	CreateOrGetTelegramUser(ctx context.Context, info User) (User, error)
+	GetByID(ctx context.Context, id uuid.UUID) (User, error)
+	GetByTelegramID(ctx context.Context, telegramID string) (User, error)
+}

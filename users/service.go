@@ -2,10 +2,10 @@ package users
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx"
 )
 
 type (
@@ -15,7 +15,7 @@ type (
 )
 
 // New creates new service
-func New(db *sql.DB) *service {
+func New(db *sqlx.DB) *service {
 	repo := newRepository(db)
 
 	return &service{

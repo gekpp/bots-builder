@@ -14,18 +14,18 @@ type (
 
 // MustConnectDB connects to DB
 func MustConnectDB(
-	Host string,
-	Port int,
-	Name string,
-	Username string,
-	Password string,
-	Timeout int,
-	SSLMode string,
+	host string,
+	port int,
+	name string,
+	username string,
+	password string,
+	timeout int,
+	sslMode string,
 	opts ...Option,
 ) *sql.DB {
 	dbConnStr := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s connect_timeout=%d",
-		Host, Port, Username, Password, Name, SSLMode, Timeout,
+		host, port, username, password, name, sslMode, timeout,
 	)
 	db, err := sql.Open("postgres", dbConnStr)
 	if err != nil {
