@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"strconv"
 
 	"github.com/google/uuid"
@@ -61,12 +60,22 @@ func (s *service) Answer(
 
 	qnr, err := s.r.getQuestionnaire(ctx, s.qnrID)
 	if err != nil {
-		return AnswerResponse{}, fmt.Errorf("could not get questionnaire: repo.getQuestionnaire: %v", err)
+		return AnswerResponse{}, fmt.Errorf("could not get questionnaire id=%v: repo.getQuestionnaire: %v",
+			s.qnrID, err)
 	}
 
 	latestQuestion, err := s.r.getLatestAskedQuestion(ctx, s.qnrID, userID)
+	if errors.Is(err, ErrNotFound) {
+		latestQuestion, err := s.r.getLatestAnsweredQuestion(ctx, s.qnrID, userID)
+		if err != nil {
+			return AnswerResponse{}, fmt.Errorf("could not get latest answered question, qnrID=%v, userID=%v: repo.getLatestAskedQuestion: %v",
+				s.qnrID, userID, err)
+		}
+		return s.askNextQuestion(ctx, qnr, userID, latestQuestion, answer)
+	}
 	if err != nil {
-		return AnswerResponse{}, fmt.Errorf("could not get latest asked question: repo.getLatestAskedQuestion: %v", err)
+		return AnswerResponse{}, fmt.Errorf("could not get latest asked question, qnrID=%v, userID=%v: repo.getLatestAskedQuestion: %v",
+			s.qnrID, userID, err)
 	}
 
 	if err := validateAnswer(ctx, latestQuestion, answer); err != nil {
@@ -83,9 +92,17 @@ func (s *service) Answer(
 		return AnswerResponse{}, fmt.Errorf("could not save answer: repo.saveAnswer: %v", err)
 	}
 
+	return s.askNextQuestion(ctx, qnr, userID, latestQuestion, answer)
+}
+
+func (s *service) askNextQuestion(ctx context.Context,
+	qnr questionnaire,
+	userID uuid.UUID,
+	latestQuestion question,
+	answer Answer) (AnswerResponse, error) {
+
 	nextQ, err := s.getNextQuestion(ctx, latestQuestion, answer)
 	if errors.Is(err, errNoMoreQuestions) {
-		log.Println("No more questions")
 		return AnswerResponse{
 			Info: Message(qnr.GoodbyeMessage),
 		}, nil
@@ -168,7 +185,6 @@ func validateAnswer(ctx context.Context, q question, a Answer) error {
 	default:
 		return fmt.Errorf("unknown question kind %v", q.Kind)
 	}
-	return nil
 }
 
 func validateRangeAnswer(a Answer, min, max int) error {

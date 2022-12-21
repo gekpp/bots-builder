@@ -83,13 +83,11 @@ func (r *repo) getQuestionRangeAnswer(ctx context.Context, qID uuid.UUID) (range
 	return res, nil
 }
 
-// GetLatestAskedQuestion looks up for latest asked question and returns it or
-// errNotFound
-func (r *repo) getLatestAskedQuestion(
+func (r *repo) getLatestQuestionWithState(
 	ctx context.Context,
 	qnrID uuid.UUID,
-	userID uuid.UUID) (question, error) {
-
+	userID uuid.UUID,
+	state userQuestionState) (question, error) {
 	var qID uuid.UUID
 
 	err := r.db.GetContext(ctx, &qID,
@@ -97,16 +95,38 @@ func (r *repo) getLatestAskedQuestion(
 		FROM user_answers
 		WHERE 
 			questionnaire_id=$1 and user_id=$2
-			and question_state='asked'
+			and question_state=$3
 		ORDER BY created_at DESC
-		LIMIT 1`, qnrID, userID)
+		LIMIT 1`, qnrID, userID, state)
+
 	if errors.Is(err, sql.ErrNoRows) {
-		return question{}, fmt.Errorf("latest asked question not found: %w", ErrNotFound)
+		return question{}, fmt.Errorf("latest question with state=%v not found: %w",
+			state, ErrNotFound)
 	}
 	if err != nil {
 		return question{}, err
 	}
 	return r.getQuestion(ctx, qID)
+}
+
+// GetLatestAskedQuestion looks up for latest asked question and returns it or
+// errNotFound
+func (r *repo) getLatestAskedQuestion(
+	ctx context.Context,
+	qnrID uuid.UUID,
+	userID uuid.UUID) (question, error) {
+
+	return r.getLatestQuestionWithState(ctx, qnrID, userID, answerStateAsked)
+}
+
+// getLatestAnsweredQuestion looks up for latest answred question and returns it or
+// errNotFound
+func (r *repo) getLatestAnsweredQuestion(
+	ctx context.Context,
+	qnrID uuid.UUID,
+	userID uuid.UUID) (question, error) {
+
+	return r.getLatestQuestionWithState(ctx, qnrID, userID, answerStateAnswered)
 }
 
 func (r *repo) getQuestion(
