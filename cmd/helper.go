@@ -36,6 +36,7 @@ func sendMessageWithKeyboard(bot *tgbotapi.BotAPI, chatID int64, msgText string,
 
 func sendMessagePlain(bot *tgbotapi.BotAPI, chatID int64, msgText string) error {
 	msg := tgbotapi.NewMessage(chatID, msgText)
+	msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(false)
 
 	if _, err := bot.Send(msg); err != nil {
 		return err
