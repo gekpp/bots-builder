@@ -74,7 +74,7 @@ func (r *repo) getQuestionRangeAnswer(ctx context.Context, qID uuid.UUID) (range
 		&res,
 		"SELECT * FROM range_answer WHERE question_id=$1", qID)
 	if errors.Is(err, sql.ErrNoRows) {
-		return rangeAnswer{}, fmt.Errorf("range answer for question not found: %w", ErrNotFound)
+		return rangeAnswer{}, fmt.Errorf("range answer for question id=%v not found: %w", qID, ErrNotFound)
 	}
 	if err != nil {
 		return rangeAnswer{}, err

@@ -1,4 +1,4 @@
-epackage questionnaire
+package questionnaire
 
 import (
 	"context"
@@ -87,7 +87,7 @@ func (s *service) Answer(
 				Text:          Message(latestQuestion.Question),
 				AnswerOptions: getAnswerOptionsIfRequired(latestQuestion),
 			},
-		}, fmt.Errorf("%w: userID=%v, questionID=%v, answer=%v", err, userID, latestQuestion.ID, answer)
+		}, fmt.Errorf("%w: userID=%v, questionID=%v, answer=%q", err, userID, latestQuestion.ID, answer)
 	}
 
 	if err := s.r.saveAnswer(ctx, userID, latestQuestion.ID, answer); err != nil {

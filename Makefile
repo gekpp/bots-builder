@@ -11,6 +11,8 @@ start-postgres:
 	postgres:15.1
 
 
+
+
 .PHONY: run
 ifeq ($(MAKECMDGOALS),run)
 include .env/.run.env
@@ -25,4 +27,12 @@ include .env/.run-arkady.env
 export
 endif
 run-arkady:
+	go run cmd/*.go
+
+.PHONY: run-anton
+ifeq ($(MAKECMDGOALS),run-anton)
+include .env/.run-anton.env
+export
+endif
+run-anton:
 	go run cmd/*.go

@@ -48,6 +48,11 @@ func main() {
 		log.Fatal(err)
 	}
 
+	u, err := bot.GetMe()
+	if err != nil {
+		logrus.Fatalf("Could not fetch info about authenticated bot: %v", err)
+	}
+	logrus.Infof("Telegram bot %v started", u.UserName)
 	bot.Debug = debug
 	updateConfig := tgbotapi.NewUpdate(0)
 	updateConfig.Timeout = 30
