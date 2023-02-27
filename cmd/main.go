@@ -32,6 +32,10 @@ var (
 )
 
 func main() {
+	fmtr := logrus.TextFormatter{}
+	fmtr.FullTimestamp = true
+	logrus.SetFormatter(&fmtr)
+
 	db := infra.MustConnectDB(argDBHost, argDBPort, argDBName, argDBUsername, argDBPassword, argDBTimeout, "disable")
 	dbx := sqlx.NewDb(db, "postgres").Unsafe()
 	qnr := questionnaire.New(dbx, uuid.MustParse(argQuestionnaireID))

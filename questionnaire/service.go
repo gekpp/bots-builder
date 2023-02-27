@@ -1,4 +1,4 @@
-package questionnaire
+epackage questionnaire
 
 import (
 	"context"
@@ -66,12 +66,14 @@ func (s *service) Answer(
 
 	latestQuestion, err := s.r.getLatestAskedQuestion(ctx, s.qnrID, userID)
 	if errors.Is(err, ErrNotFound) {
-		latestQuestion, err := s.r.getLatestAnsweredQuestion(ctx, s.qnrID, userID)
+		// FIXME: use the answer of the latest answered question to determine the next question
+		// ignore answer from arguments.
+		latestAnsweredQuestion, err := s.r.getLatestAnsweredQuestion(ctx, s.qnrID, userID)
 		if err != nil {
 			return AnswerResponse{}, fmt.Errorf("could not get latest answered question, qnrID=%v, userID=%v: repo.getLatestAskedQuestion: %v",
 				s.qnrID, userID, err)
 		}
-		return s.askNextQuestion(ctx, qnr, userID, latestQuestion, answer)
+		return s.askNextQuestion(ctx, qnr, userID, latestAnsweredQuestion, answer)
 	}
 	if err != nil {
 		return AnswerResponse{}, fmt.Errorf("could not get latest asked question, qnrID=%v, userID=%v: repo.getLatestAskedQuestion: %v",
@@ -102,23 +104,36 @@ func (s *service) askNextQuestion(ctx context.Context,
 	answer Answer) (AnswerResponse, error) {
 
 	nextQ, err := s.getNextQuestion(ctx, latestQuestion, answer)
-	if errors.Is(err, errNoMoreQuestions) {
+	switch {
+	case err == nil:
+		break
+	case errors.Is(err, errNoMoreQuestions):
 		return AnswerResponse{
 			Info: Message(qnr.GoodbyeMessage),
 		}, nil
-	}
-	if err != nil {
+	case errors.Is(err, errInvalidAnswer):
+		return s.askQuestion(ctx, qnr, userID, latestQuestion)
+	default:
 		return AnswerResponse{}, fmt.Errorf("could not get next question: getNextQuestion: %v", err)
 	}
 
-	if err := s.r.saveAskedQuestion(ctx, qnr.ID, userID, nextQ.ID); err != nil {
+	return s.askQuestion(ctx, qnr, userID, nextQ)
+
+}
+
+func (s *service) askQuestion(ctx context.Context,
+	qnr questionnaire,
+	userID uuid.UUID,
+	q question) (AnswerResponse, error) {
+
+	if err := s.r.saveAskedQuestion(ctx, qnr.ID, userID, q.ID); err != nil {
 		return AnswerResponse{}, fmt.Errorf("could not save asked question: repo.saveAskedQuestion: %v", err)
 	}
 
 	return AnswerResponse{
 		Question: Question{
-			Text:          Message(nextQ.Question),
-			AnswerOptions: getAnswerOptionsIfRequired(nextQ),
+			Text:          Message(q.Question),
+			AnswerOptions: getAnswerOptionsIfRequired(q),
 		},
 	}, nil
 }
@@ -133,13 +148,18 @@ func (s *service) getNextQuestion(ctx context.Context, q question, a Answer) (qu
 	case questionKindRange:
 		nextQID = q.NextQuestionID
 	case questionKindClose:
+		found := false
 		for _, op := range q.AnswerOptions {
 			if a == Answer(op.Answer) {
+				found = true
 				nextQID = op.NextQuestionID
 				if !nextQID.Valid {
 					nextQID = q.NextQuestionID
 				}
 			}
+		}
+		if !found {
+			return question{}, errInvalidAnswer
 		}
 	default:
 		return question{}, errors.New("invalid question kind")

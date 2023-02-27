@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-const invalidAnswerInfoMessage = "Пожалуйста, ответьте цифрой на заданный вопрос 🧐"
+const invalidAnswerInfoMessage = "Пожалуйста, ответьте корректно на заданный вопрос 🧐"
 
 var (
 	errNoMoreQuestions = errors.New("no more questions")
