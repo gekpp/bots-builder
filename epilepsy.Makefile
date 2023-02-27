@@ -52,5 +52,5 @@ bot-start:
 
 .PHONY: bot-stop
 bot-stop:
-	docker rm -f epilepsy_bot
+	docker stop epilepsy_bot && docker rm epilepsy_bot
 
