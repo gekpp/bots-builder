@@ -21,27 +21,9 @@ run-psql:
 	@docker run -it --rm \
 	--network bots_builder_epilepsy \
 	postgres:15.1 \
-	psql -h epilepsy_pg -U postgres
+	psql -h epilepsy_pg -U postgres -d bots_builder
 
 # --dbname="bots_builder" --file="bots_builder-epilepsy-dump.sql" --if-exists
-
-
-
-.PHONY: run
-ifeq ($(MAKECMDGOALS),run)
-include .env/.run.env
-export
-endif
-run:
-	go run cmd/*.go
-
-.PHONY: run-arkady
-ifeq ($(MAKECMDGOALS),run-arkady)
-include .env/.run-arkady.env
-export
-endif
-run-arkady:
-	go run cmd/*.go
 
 .PHONY: run-anton
 ifeq ($(MAKECMDGOALS),run-anton)
@@ -59,15 +41,12 @@ docker-build:
 		.
 
 .PHONY: bot-start
-ifeq ($(MAKECMDGOALS),bot-start)
-include .env/.bot-start.env
-export
-endif
 bot-start:
 	docker run \
 		-d \
 		--network=bots_builder_epilepsy \
 		--restart=always \
+		--env-file=.env/.bot-start.env \
 		--name=epilepsy_bot \
 		epilepsy_bot:latest 
 
